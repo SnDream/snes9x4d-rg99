@@ -90,7 +90,6 @@
 #include "dsp1.h"
 #include "missing.h"
 #include "memmap.h"
-#include <math.h>
 
 #include "dsp1emu.c"
 #include "dsp2emu.c"
@@ -538,8 +537,8 @@ void DSP1SetByte(uint8 byte, uint16 address)
 						DSP1.output[1] = (uint8)((Op06H >> 8) & 0xFF);
 						DSP1.output[2] = (uint8)(Op06V & 0xFF);
 						DSP1.output[3] = (uint8)((Op06V >> 8) & 0xFF);
-						DSP1.output[4] = (uint8)(Op06S & 0xFF);
-						DSP1.output[5] = (uint8)((Op06S >> 8) & 0xFF);
+						DSP1.output[4] = (uint8)(Op06M & 0xFF);
+						DSP1.output[5] = (uint8)((Op06M >> 8) & 0xFF);
 						break;
 
 					case 0x1e:

@@ -1,4 +1,4 @@
-// Copyright (C) 1997-2001 ZSNES Team ( zsknight@zsnes.com / _demo_@zsnes.com )
+// Copyright (C) 1997-2006 ZSNES Team ( zsKnight, _Demo_, pagefault, Nach )
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -17,17 +17,9 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <math.h>
 #include <string.h>
 #include <stdlib.h>
 // #define DebugDSP1
-
-// uncomment some lines to test
-// #define printinfo
-// #define debug06
-
-#define __OPT__
-#define __OPT06__
 
 #ifdef DebugDSP1
 
@@ -144,41 +136,11 @@ const unsigned short DSP1ROM[1024] = {
     0xffff, 0xffff};
 
 /***************************************************************************\
-*  Math tables                                                              *
-\***************************************************************************/
-
-#define INCR 2048
-#define Angle(x) (((x) / (65536 / INCR)) & (INCR - 1))
-#define Cos(x) ((double)CosTable2[x])
-#define Sin(x) ((double)SinTable2[x])
-#ifdef PI
-#undef PI
-#endif
-#define PI 3.1415926535897932384626433832795
-double CosTable2[INCR];
-double SinTable2[INCR];
-
-double Atan(double x)
-{
-	if ((x >= 1) || (x <= 1))
-		return (x / (1 + 0.28 * x * x));
-	else
-		return (PI / 2 - Atan(1 / x));
-}
-
-/***************************************************************************\
 *  DSP1 code                                                                *
 \***************************************************************************/
 
 void InitDSP(void)
 {
-#ifdef __OPT__
-	unsigned int i;
-	for (i = 0; i < INCR; i++) {
-		CosTable2[i] = (cos((double)(2 * PI * i / INCR)));
-		SinTable2[i] = (sin((double)(2 * PI * i / INCR)));
-	}
-#endif
 #ifdef DebugDSP1
 	Start_Log();
 #endif
@@ -504,35 +466,69 @@ short SecAZS_E1;
 short SecAZS_C2;
 short SecAZS_E2;
 
+short Nx;
+short Ny;
+short Nz;
+short Gx;
+short Gy;
+short Gz;
+short C_Les;
+short E_Les;
+short G_Les;
+
 const short MaxAZS_Exp[16] = {0x38b4, 0x38b7, 0x38ba, 0x38be, 0x38c0, 0x38c4, 0x38c7, 0x38ca,
 			      0x38ce, 0x38d0, 0x38d4, 0x38d7, 0x38da, 0x38dd, 0x38e0, 0x38e4};
 
 void DSP1_Parameter(short Fx, short Fy, short Fz, short Lfe, short Les, short Aas, short Azs, short *Vof, short *Vva,
 		    short *Cx, short *Cy)
 {
-	short CSec, C, E;
+	short CSec, C, E, MaxAZS, Aux;
+	short LfeNx, LfeNy, LfeNz;
+	short LesNx, LesNy, LesNz;
+	short CentreZ;
 
 	// Copy Zenith angle for clipping
 	short AZS = Azs;
 
-	// Store Sin and Cos of Azimuth and Zenith angles
+	// Store Sine and Cosine of Azimuth and Zenith angle
 	SinAas = DSP1_Sin(Aas);
 	CosAas = DSP1_Cos(Aas);
 	SinAzs = DSP1_Sin(Azs);
 	CosAzs = DSP1_Cos(Azs);
 
+	Nx = SinAzs * -SinAas >> 15;
+	Ny = SinAzs *  CosAas >> 15;
+	Nz = CosAzs *  0x7fff >> 15;
+
+	LfeNx = Lfe * Nx >> 15;
+	LfeNy = Lfe * Ny >> 15;
+	LfeNz = Lfe * Nz >> 15;
+
 	// Center of Projection
-	CentreX = Fx + (Lfe * (SinAzs * -SinAas >> 15) >> 15);
-	CentreY = Fy + (Lfe * (SinAzs * CosAas >> 15) >> 15);
+	CentreX = Fx + LfeNx;
+	CentreY = Fy + LfeNy;
+	CentreZ = Fz + LfeNz;
+
+	LesNx = Les * Nx >> 15;
+	LesNy = Les * Ny >> 15;
+	LesNz = Les * Nz >> 15;
+
+	Gx = CentreX - LesNx;
+	Gy = CentreY - LesNy;
+	Gz = CentreZ - LesNz;
+
+	E_Les = 0;
+	DSP1_Normalize(Les, &C_Les, &E_Les);
+	G_Les = Les;
 
 	E = 0;
-	DSP1_Normalize(Fz + (Lfe * (CosAzs * 0x7fff >> 15) >> 15), &C, &E);
+	DSP1_Normalize(CentreZ, &C, &E);
 
 	VPlane_C = C;
 	VPlane_E = E;
 
 	// Determine clip boundary and clip Zenith angle if necessary
-	short MaxAZS = MaxAZS_Exp[-E];
+	MaxAZS = MaxAZS_Exp[-E];
 
 	if (AZS < 0) {
 		MaxAZS = -MaxAZS;
@@ -543,7 +539,7 @@ void DSP1_Parameter(short Fx, short Fy, short Fz, short Lfe, short Les, short Aa
 			AZS = MaxAZS;
 	}
 
-	// Store Sin and Cos of clipped Zenith angle
+	// Store Sine and Cosine of clipped Zenith angle
 	SinAZS = DSP1_Sin(AZS);
 	CosAZS = DSP1_Cos(AZS);
 
@@ -569,7 +565,7 @@ void DSP1_Parameter(short Fx, short Fy, short Fz, short Lfe, short Les, short Aa
 		C = Azs - MaxAZS;
 		if (C >= 0)
 			C--;
-		short Aux = ~(C << 2);
+		Aux = ~(C << 2);
 
 		C = Aux * DSP1ROM[0x0328] >> 15;
 		C = (C * Aux >> 15) + DSP1ROM[0x0327];
@@ -593,7 +589,7 @@ void DSP1_Parameter(short Fx, short Fy, short Fz, short Lfe, short Les, short Aa
 
 	*Vva = DSP1_Truncate(-C, E);
 
-	// Store Sec of clipped Zenith angle
+	// Store Secant of clipped Zenith angle
 	DSP1_Inverse(CosAZS, 0, &SecAZS_C2, &SecAZS_E2);
 }
 
@@ -657,131 +653,95 @@ short Op06Y;
 short Op06Z;
 short Op06H;
 short Op06V;
-unsigned short Op06S;
+short Op06M;
 
-double ObjPX;
-double ObjPY;
-double ObjPZ;
-double ObjPX1;
-double ObjPY1;
-double ObjPZ1;
-double ObjPX2;
-double ObjPY2;
-double ObjPZ2;
-double DivideOp06;
-int Temp;
-int tanval2;
+static short DSP1_ShiftR(short C, short E)
+{
+	return (C * DSP1ROM[0x0031 + E] >> 15);
+}
 
-#ifdef __OPT06__
+static void DSP1_Project(short X, short Y, short Z, short *H, short *V, short *M)
+{
+	int aux, aux4;
+	short E, E2, E3, E4, E5, refE, E6, E7;
+	short C2, C4, C6, C8, C9, C10, C11, C12, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26;
+	short Px, Py, Pz;
+
+	E4 = E3 = E2 = E = E5 = 0;
+
+	DSP1_NormalizeDouble((int) X - Gx, &Px, &E4);
+	DSP1_NormalizeDouble((int) Y - Gy, &Py, &E );
+	DSP1_NormalizeDouble((int) Z - Gz, &Pz, &E3);
+	Px >>= 1; // to avoid overflows when calculating the scalar products
+	E4--;
+	Py >>= 1;
+	E--;
+	Pz >>= 1;
+	E3--;
+
+	refE = (E < E3) ? E : E3;
+	refE = (refE < E4) ? refE : E4;
+
+	Px = DSP1_ShiftR(Px, E4 - refE); // normalize them to the same exponent
+	Py = DSP1_ShiftR(Py, E  - refE);
+	Pz = DSP1_ShiftR(Pz, E3 - refE);
+
+	C11 = -(Px * Nx >> 15);
+	C8  = -(Py * Ny >> 15);
+	C9  = -(Pz * Nz >> 15);
+	C12 = C11 + C8 + C9; // this cannot overflow!
+
+	aux4 = C12; // de-normalization with 32-bits arithmetic
+	refE = 16 - refE; // refE can be up to 3
+	if (refE >= 0)
+		aux4 <<=  (refE);
+	else
+		aux4 >>= -(refE);
+	if (aux4 == -1)
+		aux4 = 0; // why?
+	aux4 >>= 1;
+
+	aux = ((unsigned short) G_Les) + aux4; // Les - the scalar product of P with the normal vector of the screen
+	DSP1_NormalizeDouble(aux, &C10, &E2);
+	E2 = 15 - E2;
+
+	DSP1_Inverse(C10, 0, &C4, &E4);
+	C2 = C4 * C_Les >> 15; // scale factor
+
+	// H
+	E7 = 0;
+	C16 = Px * ( CosAas *  0x7fff >> 15) >> 15;
+	C20 = Py * ( SinAas *  0x7fff >> 15) >> 15;
+	C17 = C16 + C20; // scalar product of P with the normalized horizontal vector of the screen...
+
+	C18 = C17 * C2 >> 15; // ... multiplied by the scale factor
+	DSP1_Normalize(C18, &C19, &E7);
+	*H = DSP1_Truncate(C19, E_Les - E2 + refE + E7);
+
+	// V
+	E6 = 0;
+	C21 = Px * ( CosAzs * -SinAas >> 15) >> 15;
+	C22 = Py * ( CosAzs *  CosAas >> 15) >> 15;
+	C23 = Pz * (-SinAzs *  0x7fff >> 15) >> 15;
+	C24 = C21 + C22 + C23; // scalar product of P with the normalized vertical vector of the screen...
+
+	C26 = C24 * C2 >> 15; // ... multiplied by the scale factor
+	DSP1_Normalize(C26, &C25, &E6);
+	*V = DSP1_Truncate(C25, E_Les - E2 + refE + E6);
+
+	// M
+	DSP1_Normalize(C2, &C6, &E4);
+	*M = DSP1_Truncate(C6, E4 + E_Les - E2 - 7); // M is the scale factor divided by 2^7
+}
+
 void DSPOp06()
 {
-	ObjPX = Op06X - Op02FX;
-	ObjPY = Op06Y - Op02FY;
-	ObjPZ = Op06Z - Op02FZ;
-
-	// rotate around Z
-	tanval2 = Angle(-Op02AAS + 32768);
-	// tanval2 = (-Op02AAS+32768)/(65536/INCR);
-	ObjPX1 = (ObjPX * Cos(tanval2) + ObjPY * -Sin(tanval2));
-	ObjPY1 = (ObjPX * Sin(tanval2) + ObjPY * Cos(tanval2));
-	ObjPZ1 = ObjPZ;
-
-	// rotate around X
-	// tanval2 = (-Op02AZS/(65536/INCR)) & 1023;
-	tanval2 = Angle(-Op02AZS);
-	// tanval2 = (-Op02AZS)/256;
-	ObjPX2 = ObjPX1;
-	ObjPY2 = (ObjPY1 * Cos(tanval2) + ObjPZ1 * -Sin(tanval2));
-	ObjPZ2 = (ObjPY1 * Sin(tanval2) + ObjPZ1 * Cos(tanval2));
-
-#ifdef debug06
-	Log_Message("ObjPX2: %f ObjPY2: %f ObjPZ2: %f\n", ObjPX2, ObjPY2, ObjPZ2);
-#endif
-
-	ObjPZ2 = ObjPZ2 - Op02LFE;
-
-	if (ObjPZ2 < 0) {
-		double d;
-		Op06H = (short)(-ObjPX2 * Op02LES / -(ObjPZ2)); //-ObjPX2*256/-ObjPZ2;
-		Op06V = (short)(-ObjPY2 * Op02LES / -(ObjPZ2)); //-ObjPY2*256/-ObjPZ2;
-		d = (double)Op02LES;
-		d *= 256.0;
-		d /= (-ObjPZ2);
-		if (d > 65535.0)
-			d = 65535.0;
-		else if (d < 0.0)
-			d = 0.0;
-		Op06S = (unsigned short)d;
-		// Op06S=(unsigned short)(256*(double)Op02LES/-ObjPZ2);
-		// Op06S=(unsigned
-		// short)((double)(256.0*((double)Op02LES)/(-ObjPZ2)));
-	} else {
-		Op06H = 0;
-		Op06V = 14 * 16;
-		Op06S = 0xFFFF;
-	}
-
+	DSP1_Project(Op06X, Op06Y, Op06Z, &Op06H, &Op06V, &Op06M);
 #ifdef DebugDSP1
 	Log_Message("OP06 X:%d Y:%d Z:%d", Op06X, Op06Y, Op06Z);
-	Log_Message("OP06 H:%d V:%d S:%d", Op06H, Op06V, Op06S);
+	Log_Message("OP06 H:%d V:%d S:%d", Op06H, Op06V, Op06M);
 #endif
 }
-#else
-
-void DSPOp06()
-{
-	ObjPX = Op06X - Op02FX;
-	ObjPY = Op06Y - Op02FY;
-	ObjPZ = Op06Z - Op02FZ;
-
-	// rotate around Z
-	tanval = (-Op02AAS + 32768) / 65536.0 * 6.2832;
-	ObjPX1 = (ObjPX * cos(tanval) + ObjPY * -sin(tanval));
-	ObjPY1 = (ObjPX * sin(tanval) + ObjPY * cos(tanval));
-	ObjPZ1 = ObjPZ;
-
-#ifdef debug06
-	Log_Message("Angle : %f", tanval);
-	Log_Message("ObjPX1: %f ObjPY1: %f ObjPZ1: %f\n", ObjPX1, ObjPY1, ObjPZ1);
-	Log_Message("cos(tanval) : %f  sin(tanval) : %f", cos(tanval), sin(tanval));
-#endif
-
-	// rotate around X
-	tanval = (-Op02AZS) / 65536.0 * 6.2832;
-	ObjPX2 = ObjPX1;
-	ObjPY2 = (ObjPY1 * cos(tanval) + ObjPZ1 * -sin(tanval));
-	ObjPZ2 = (ObjPY1 * sin(tanval) + ObjPZ1 * cos(tanval));
-
-#ifdef debug06
-	Log_Message("ObjPX2: %f ObjPY2: %f ObjPZ2: %f\n", ObjPX2, ObjPY2, ObjPZ2);
-#endif
-
-	ObjPZ2 = ObjPZ2 - Op02LFE;
-
-	if (ObjPZ2 < 0) {
-		Op06H = (short)(-ObjPX2 * Op02LES / -(ObjPZ2)); //-ObjPX2*256/-ObjPZ2;
-		Op06V = (short)(-ObjPY2 * Op02LES / -(ObjPZ2)); //-ObjPY2*256/-ObjPZ2;
-		double d = (double)Op02LES;
-		d *= 256.0;
-		d /= (-ObjPZ2);
-		if (d > 65535.0)
-			d = 65535.0;
-		else if (d < 0.0)
-			d = 0.0;
-		Op06S = (unsigned short)d;
-		// Op06S=(unsigned short)(256*(double)Op02LES/-ObjPZ2);
-	} else {
-		Op06H = 0;
-		Op06V = 14 * 16;
-		Op06S = 0xFFFF;
-	}
-
-#ifdef DebugDSP1
-	Log_Message("OP06 X:%d Y:%d Z:%d", Op06X, Op06Y, Op06Z);
-	Log_Message("OP06 H:%d V:%d S:%d", Op06H, Op06V, Op06S);
-#endif
-}
-#endif
 
 short matrixC[3][3];
 short matrixB[3][3];
