@@ -2264,7 +2264,6 @@ void CMemory::ApplyROMFixes()
 	    strcmp(ROMName, "FX SKIING NINTENDO 96") == 0 || strcmp(ROMName, "DIRT RACER") == 0 || Settings.StarfoxHack;
 
 	Settings.ChuckRock = strcmp(ROMName, "CHUCK ROCK") == 0;
-	Settings.Dezaemon = strcmp(ROMName, "DEZAEMON") == 0;
 
 	if (strcmp(ROMName, "RADICAL DREAMERS") == 0 || strcmp(ROMName, "TREASURE CONFLIX") == 0) {
 		int c;

@@ -80,6 +80,9 @@ extern uint8 Mode7Depths[2];
 
 extern bool8_32 Scale;
 
+#define CLIP_10_BIT_SIGNED(a)                                                  \
+  ((a) & ((1 << 10) - 1)) + (((((a) & (1 << 13)) ^ (1 << 13)) - (1 << 13)) >> 3)
+
 #define ON_MAIN(N) (GFX.r212c & (1 << (N)) && !(PPU.BG_Forced & (1 << (N))))
 
 #define SUB_OR_ADD(N) (GFX.r2131 & (1 << (N)))
@@ -1861,14 +1864,12 @@ void DrawBackground(uint32 BGMode, uint32 bg, uint8 Z1, uint8 Z2)
 		int32 CentreY = ((int32)l->CentreY << M7) >> M7;                                                       \
                                                                                                                        \
 		if (ppu->Mode7VFlip)                                                                                   \
-			yy = 261 - (int)Line;                                                                          \
+			yy = 255 - (int)Line;                                                                          \
 		else                                                                                                   \
 			yy = Line;                                                                                     \
                                                                                                                        \
-		if (ppu->Mode7Repeat == 0)                                                                             \
-			yy += (VOffset - CentreY) % 1023;                                                              \
-		else                                                                                                   \
-			yy += VOffset - CentreY;                                                                       \
+		yy += CLIP_10_BIT_SIGNED(VOffset - CentreY);                                                           \
+                                                                                                                       \
 		int BB = l->MatrixB * yy + (CentreX << 8);                                                             \
 		int DD = l->MatrixD * yy + (CentreY << 8);                                                             \
                                                                                                                        \
@@ -1895,11 +1896,8 @@ void DrawBackground(uint32 BGMode, uint32 bg, uint8 Z1, uint8 Z2)
 				aa = l->MatrixA;                                                                       \
 				cc = l->MatrixC;                                                                       \
 			}                                                                                              \
-			int xx;                                                                                        \
-			if (ppu->Mode7Repeat == 0)                                                                     \
-				xx = startx + (HOffset - CentreX) % 1023;                                              \
-			else                                                                                           \
-				xx = startx + HOffset - CentreX;                                                       \
+			int xx = startx + CLIP_10_BIT_SIGNED(HOffset - CentreX);                                       \
+                                                                                                                       \
 			int AA = l->MatrixA * xx;                                                                      \
 			int CC = l->MatrixC * xx;                                                                      \
                                                                                                                        \
@@ -1920,11 +1918,6 @@ void DrawBackground(uint32 BGMode, uint32 bg, uint8 Z1, uint8 Z2)
 				for (int x = startx; x != endx; x += dir, AA += aa, CC += cc, p++, d++) {              \
 					int X = ((AA + BB) >> 8);                                                      \
 					int Y = ((CC + DD) >> 8);                                                      \
-                                                                                                                       \
-					if (Settings.Dezaemon && ppu->Mode7Repeat == 2) {                              \
-						X &= 0x7ff;                                                            \
-						Y &= 0x7ff;                                                            \
-					}                                                                              \
                                                                                                                        \
 					if (((X | Y) & ~0x3ff) == 0) {                                                 \
 						uint8 *TileData =                                                      \
@@ -2057,14 +2050,11 @@ void DrawBGMode7Background16Sub1_2(uint8 *Screen, int bg)
 		int CentreY = ((int)l->CentreY << M7) >> M7;                                                           \
                                                                                                                        \
 		if (PPU.Mode7VFlip)                                                                                    \
-			yy = 261 - (int)Line;                                                                          \
+			yy = 255 - (int)Line;                                                                          \
 		else                                                                                                   \
 			yy = Line;                                                                                     \
                                                                                                                        \
-		if (PPU.Mode7Repeat == 0)                                                                              \
-			yy += (VOffset - CentreY) % 1023;                                                              \
-		else                                                                                                   \
-			yy += VOffset - CentreY;                                                                       \
+		yy += CLIP_10_BIT_SIGNED(VOffset - CentreY);                                                           \
 		bool8_32 simpleCase = FALSE;                                                                           \
 		int BB;                                                                                                \
 		int DD;                                                                                                \
@@ -2104,11 +2094,7 @@ void DrawBGMode7Background16Sub1_2(uint8 *Screen, int bg)
 				aa = l->MatrixA;                                                                       \
 				cc = l->MatrixC;                                                                       \
 			}                                                                                              \
-			int xx;                                                                                        \
-			if (PPU.Mode7Repeat == 0)                                                                      \
-				xx = startx + (HOffset - CentreX) % 1023;                                              \
-			else                                                                                           \
-				xx = startx + HOffset - CentreX;                                                       \
+			int xx = startx + CLIP_10_BIT_SIGNED(HOffset - CentreX);                                       \
 			int AA, CC = 0;                                                                                \
 			if (simpleCase) {                                                                              \
 				AA = xx << 8;                                                                          \
@@ -2139,11 +2125,6 @@ void DrawBGMode7Background16Sub1_2(uint8 *Screen, int bg)
 					do {                                                                           \
 						int X = (AA + BB) >> 8;                                                \
 						int Y = DD >> 8;                                                       \
-                                                                                                                       \
-						if (Settings.Dezaemon && PPU.Mode7Repeat == 2) {                       \
-							X &= 0x7ff;                                                    \
-							Y &= 0x7ff;                                                    \
-						}                                                                      \
                                                                                                                        \
 						if (((X | Y) & ~0x3ff) == 0) {                                         \
 							uint8 *TileData =                                              \
@@ -2213,7 +2194,7 @@ void DrawBGMode7Background16Sub1_2(uint8 *Screen, int bg)
 							 * of the next source                                          \
 							 * point over. */                                              \
 							uint32 X10 = (xPix + dir) & 0x3ff;                             \
-							uint32 Y01 = (yPix + dir) & 0x3ff;                             \
+							uint32 Y01 = (yPix + (PPU.Mode7VFlip ? -1 : 1)) & 0x3ff;       \
 							uint8 *TileData10 =                                            \
 							    VRAM1 +                                                    \
 							    (Memory.VRAM[((Y & ~7) << 5) + ((X10 >> 2) & ~1)] << 7);   \
@@ -2249,6 +2230,22 @@ void DrawBGMode7Background16Sub1_2(uint8 *Screen, int bg)
 							uint32 area2 = Xdel - XY;                                      \
 							uint32 area3 = Ydel - XY;                                      \
 							uint32 area4 = XY;                                             \
+							if (PPU.Mode7HFlip) {                                          \
+								uint32 tmp = area1;                                    \
+								area1 = area2;                                         \
+								area2 = tmp;                                           \
+								tmp = area3;                                           \
+								area3 = area4;                                         \
+								area4 = tmp;                                           \
+							}                                                              \
+							if (PPU.Mode7VFlip) {                                          \
+								uint32 tmp = area1;                                    \
+								area1 = area3;                                         \
+								area3 = tmp;                                           \
+								tmp = area2;                                           \
+								area2 = area4;                                         \
+								area4 = tmp;                                           \
+							}                                                              \
 							uint32 tempColor = ((area1 * p1) + (area2 * p2) +              \
 									    (area3 * p3) + (area4 * p4)) >>            \
 									   5;                                          \
@@ -2339,11 +2336,6 @@ void DrawBGMode7Background16Sub1_2(uint8 *Screen, int bg)
 					uint32 yPix = yPos >> 8;                                                       \
 					uint32 X = xPix;                                                               \
 					uint32 Y = yPix;                                                               \
-                                                                                                                       \
-					if (Settings.Dezaemon && PPU.Mode7Repeat == 2) {                               \
-						X &= 0x7ff;                                                            \
-						Y &= 0x7ff;                                                            \
-					}                                                                              \
                                                                                                                        \
 					if (((X | Y) & ~0x3ff) == 0) {                                                 \
 						uint8 *TileData =                                                      \
