@@ -440,7 +440,7 @@ void S9xStartScreenRefresh()
 		gfx->DepthDelta = gfx->SubZBuffer - gfx->ZBuffer;
 		gfx->Delta = (gfx->SubScreen - gfx->Screen) >> 1;
 	}
-	if (++ippu->FrameCount % Memory.ROMFramesPerSecond == 0) {
+	if (++ippu->FrameCount == (unsigned)Memory.ROMFramesPerSecond) {
 		ippu->DisplayedRenderedFrameCount = ippu->RenderedFramesCount;
 		ippu->RenderedFramesCount = 0;
 		ippu->FrameCount = 0;
