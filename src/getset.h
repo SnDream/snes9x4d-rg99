@@ -469,12 +469,12 @@ INLINE void S9xSetByte(uint8 Byte, uint32 Address, struct SCPUState *cpu)
 #ifdef SETA_DSP
 	case CMemory::MAP_SETA_DSP:
 		cpu->Cycles += SLOW_ONE_CYCLE;
-		S9xSetSetaDSP(Address, Byte);
+		S9xSetSetaDSP(Byte, Address);
 		return;
 
 	case CMemory::MAP_SETA_RISC:
 		cpu->Cycles += SLOW_ONE_CYCLE;
-		S9xSetST018(Address, Byte);
+		S9xSetST018(Byte, Address);
 		return;
 #endif
 
@@ -639,14 +639,14 @@ INLINE void S9xSetWord(uint16 Word, uint32 Address, struct SCPUState *cpu)
 #ifdef SETA_DSP
 	case CMemory::MAP_SETA_DSP:
 		cpu->Cycles += SLOW_ONE_CYCLE * 2;
-		S9xSetSetaDSP(Address, Word & 0xff);
-		S9xSetSetaDSP((Address + 1), (uint8)(Word >> 8));
+		S9xSetSetaDSP(Word & 0xff, Address);
+		S9xSetSetaDSP((uint8)(Word >> 8), (Address + 1));
 		return;
 
 	case CMemory::MAP_SETA_RISC:
 		cpu->Cycles += SLOW_ONE_CYCLE * 2;
-		S9xSetST018(Address, Word & 0xff);
-		S9xSetST018((Address + 1), (uint8)(Word >> 8));
+		S9xSetST018(Word & 0xff, Address);
+		S9xSetST018((uint8)(Word >> 8), (Address + 1));
 		return;
 #endif
 
@@ -772,7 +772,7 @@ INLINE uint8 *S9xGetMemPointer(uint32 Address)
 
 #ifdef SETA_DSP
 	case CMemory::MAP_SETA_DSP:
-		return Memory.SRAM;
+		return Memory.SRAM + ((Address & 0xffff) & Memory.SRAMMask);
 #endif
 
 	case CMemory::MAP_DEBUG:

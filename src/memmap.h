@@ -80,6 +80,7 @@ class CMemory
 	void BSHiROMMap();
 	void SPC7110HiROMMap();
 	void SPC7110Sram(uint8);
+	void SetaDSPMap();
 	bool8_32 AllASCII(uint8 *b, int size);
 	int ScoreHiROM(bool8_32 skip_header);
 	int ScoreLoROM(bool8_32 skip_header);

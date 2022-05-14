@@ -330,7 +330,7 @@ struct SSettings {
 	bool8_32 WrestlemaniaArcade;
 	bool8_32 BS; // Japanese Satellite System games.
 	bool8_32 DaffyDuck;
-	uint8 APURAMInitialValue;
+	int8 SETA;
 
 #ifdef __WIN32__
 	int SoundDriver;

@@ -675,6 +675,9 @@ void CMemory::InitROM(bool8_32 Interleaved)
 	Settings.C4 = FALSE;
 	Settings.SDD1 = FALSE;
 	Settings.SRTC = FALSE;
+#ifdef SETA_DSP
+	Settings.SETA = FALSE;
+#endif
 
 	ZeroMemory(BlockIsRAM, MEMMAP_NUM_BLOCKS);
 	ZeroMemory(BlockIsROM, MEMMAP_NUM_BLOCKS);
@@ -743,12 +746,36 @@ void CMemory::InitROM(bool8_32 Interleaved)
 			if (Settings.SDD1)
 			    S9xLoadSDD1Data ();
 		*/
+#ifdef SETA_DSP
+		if (((ROMType & 0xF0) == 0xF0) && ((ROMSpeed & 0x0F) != 5)) {
+			SRAMSize = 2;
+			SNESGameFixes.SRAMInitialValue = 0x00;
+			if ((ROMType & 0x0F) == 6) {
+				if (ROM[0x7FD7] == 0x09) {
+					Settings.SETA = ST_011;
+					SetSETA = &S9xSetST011;
+					GetSETA = &S9xGetST011;
+				} else {
+					Settings.SETA = ST_010;
+					SetSETA = &S9xSetST010;
+					GetSETA = &S9xGetST010;
+				}
+			} else {
+				Settings.SETA = ST_018;
+			}
+		}
+#endif
 		Settings.C4 = Settings.ForceC4;
 		if ((ROMType & 0xf0) == 0xf0 &&
 		    (strncmp(ROMName, "MEGAMAN X", 9) == 0 || strncmp(ROMName, "ROCKMAN X", 9) == 0)) {
 			Settings.C4 = !Settings.ForceNoC4;
 		}
 
+#ifdef SETA_DSP
+		if (Settings.SETA && Settings.SETA != ST_018)
+			SetaDSPMap();
+		else
+#endif
 		if (Settings.SuperFX) {
 			//::SRAM = ROM + 1024 * 1024 * 4;
 			SuperFXROMMap();
@@ -1082,7 +1109,12 @@ void CMemory::LoROMMap()
 		BlockIsRAM[c + 1] = BlockIsRAM[c + 0x801] = TRUE;
 
 		Map[c + 2] = Map[c + 0x802] = (uint8 *)MAP_PPU;
-		Map[c + 3] = Map[c + 0x803] = (uint8 *)MAP_PPU;
+#ifdef SETA_DSP
+		if (Settings.SETA == ST_018)
+			Map[c + 3] = Map[c + 0x803] = (uint8 *)MAP_SETA_RISC;
+		else
+#endif
+			Map[c + 3] = Map[c + 0x803] = (uint8 *)MAP_PPU;
 		Map[c + 4] = Map[c + 0x804] = (uint8 *)MAP_CPU;
 		Map[c + 5] = Map[c + 0x805] = (uint8 *)MAP_CPU;
 		if (Settings.DSP1Master) {
@@ -1145,6 +1177,125 @@ void CMemory::LoROMMap()
 	MapRAM();
 	WriteProtectROM();
 }
+
+#ifdef SETA_DSP
+void CMemory::SetaDSPMap()
+{
+	int c;
+	int i;
+	int j;
+	int mask[4];
+	for (j = 0; j < 4; j++)
+		mask[j] = 0x00ff;
+
+	mask[0] = (CalculatedSize / 0x8000) - 1;
+
+	int x;
+	bool foundZeros;
+	bool pastZeros;
+
+	for (j = 0; j < 3; j++) {
+		x = 1;
+		foundZeros = false;
+		pastZeros = false;
+
+		mask[j + 1] = mask[j];
+
+		while (x > 0x100 && !pastZeros) {
+			if (mask[j] & x) {
+				x <<= 1;
+				if (foundZeros)
+					pastZeros = true;
+			} else {
+				foundZeros = true;
+				pastZeros = false;
+				mask[j + 1] |= x;
+				x <<= 1;
+			}
+		}
+	}
+
+	// Banks 00->3f and 80->bf
+	for (c = 0; c < 0x400; c += 16) {
+		Map[c + 0] = Map[c + 0x800] = RAM;
+		Map[c + 1] = Map[c + 0x801] = RAM;
+		BlockIsRAM[c + 0] = BlockIsRAM[c + 0x800] = TRUE;
+		BlockIsRAM[c + 1] = BlockIsRAM[c + 0x801] = TRUE;
+
+		Map[c + 2] = Map[c + 0x802] = (uint8 *)MAP_PPU;
+		Map[c + 3] = Map[c + 0x803] = (uint8 *)MAP_PPU;
+		Map[c + 4] = Map[c + 0x804] = (uint8 *)MAP_CPU;
+		Map[c + 5] = Map[c + 0x805] = (uint8 *)MAP_CPU;
+		Map[c + 6] = Map[c + 0x806] = (uint8 *)bytes0x2000 - 0x6000;
+		Map[c + 7] = Map[c + 0x807] = (uint8 *)bytes0x2000 - 0x6000;
+
+		for (i = c + 8; i < c + 16; i++) {
+			int e = 3;
+			int d = c >> 4;
+			while (d > mask[0]) {
+				d &= mask[e];
+				e--;
+			}
+			Map[i] = Map[i + 0x800] = ROM + (((d)-1) * 0x8000);
+			BlockIsROM[i] = BlockIsROM[i + 0x800] = TRUE;
+		}
+	}
+
+	// Banks 40->7f and c0->ff
+	for (c = 0; c < 0x400; c += 16) {
+		for (i = c + 8; i < c + 16; i++) {
+			int e = 3;
+			int d = (c + 0x400) >> 4;
+			while (d > mask[0]) {
+				d &= mask[e];
+				e--;
+			}
+
+			Map[i + 0x400] = Map[i + 0xc00] = ROM + (((d)-1) * 0x8000);
+		}
+
+		// only upper half is ROM
+		for (i = c + 8; i < c + 16; i++) {
+			BlockIsROM[i + 0x400] = BlockIsROM[i + 0xc00] = TRUE;
+		}
+	}
+
+	memset(SRAM, 0, 0x1000);
+	for (c = 0x600; c < 0x680; c += 0x10) {
+		for (i = 0; i < 0x08; i++) {
+			// where does the SETA chip access, anyway?
+			// please confirm this?
+			Map[c + 0x80 + i] = (uint8 *)MAP_SETA_DSP;
+			BlockIsROM[c + 0x80 + i] = FALSE;
+			BlockIsRAM[c + 0x80 + i] = TRUE;
+		}
+
+		for (i = 0; i < 0x04; i++) {
+			// and this!
+			Map[c + i] = (uint8 *)MAP_SETA_DSP;
+			BlockIsROM[c + i] = FALSE;
+		}
+	}
+
+	int sum = 0, k, l, bankcount;
+	bankcount = 1 << (ROMSize - 7); // Mbits
+	// safety for corrupt headers
+	if (bankcount > 128)
+		bankcount = (CalculatedSize / 0x8000) / 4;
+	bankcount *= 4;     // to banks
+	bankcount <<= 4;    // Map banks
+	bankcount += 0x800; // normalize
+	for (k = 0x800; k < (bankcount); k += 16) {
+		uint8 *bank = 0x8000 + Map[k + 8];
+		for (l = 0; l < 0x8000; l++)
+			sum += bank[l];
+	}
+	CalculatedChecksum = sum & 0xFFFF;
+
+	MapRAM();
+	WriteProtectROM();
+}
+#endif
 
 void CMemory::HiROMMap()
 {
@@ -1936,8 +2087,10 @@ const char *CMemory::KartContents()
 		sprintf(result, "%s+%s", tmp, "SPC7110+RTC");
 	else if (Settings.SPC7110)
 		sprintf(result, "%s+%s", tmp, "SPC7110");
+#endif
 	else if (Settings.C4)
 		sprintf(result, "%s+%s", tmp, "C4");
+#ifdef SETA_DSP
 	else if (Settings.SETA != 0) {
 		switch (Settings.SETA) {
 		case ST_010:
