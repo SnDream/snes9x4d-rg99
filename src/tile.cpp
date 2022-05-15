@@ -152,7 +152,7 @@ uint8 ConvertTile(uint8 *pCache, uint32 TileAddr)
 }
 
 #ifndef FOREVER_16_BIT
-inline void WRITE_4PIXELS(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint8 Pixel;
 	uint8 *Screen = gfx->S + Offset;
@@ -171,7 +171,7 @@ inline void WRITE_4PIXELS(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS_FLIPPED(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS_FLIPPED(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint8 Pixel;
 	uint8 *Screen = gfx->S + Offset;
@@ -190,7 +190,7 @@ inline void WRITE_4PIXELS_FLIPPED(uint32 Offset, uint8 *Pixels, struct SGFX *gfx
 #undef FN
 }
 
-inline void WRITE_4PIXELSx2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELSx2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint8 Pixel;
 	uint8 *Screen = gfx->S + Offset;
@@ -209,7 +209,7 @@ inline void WRITE_4PIXELSx2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS_FLIPPEDx2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS_FLIPPEDx2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint8 Pixel;
 	uint8 *Screen = gfx->S + Offset;
@@ -228,7 +228,7 @@ inline void WRITE_4PIXELS_FLIPPEDx2(uint32 Offset, uint8 *Pixels, struct SGFX *g
 #undef FN
 }
 
-inline void WRITE_4PIXELSx2x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELSx2x2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint8 Pixel;
 	uint8 *Screen = gfx->S + Offset;
@@ -249,7 +249,7 @@ inline void WRITE_4PIXELSx2x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS_FLIPPEDx2x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS_FLIPPEDx2x2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint8 Pixel;
 	uint8 *Screen = gfx->S + Offset;
@@ -270,7 +270,7 @@ inline void WRITE_4PIXELS_FLIPPEDx2x2(uint32 Offset, uint8 *Pixels, struct SGFX 
 #undef FN
 }
 
-void DrawTile(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 
@@ -279,7 +279,7 @@ void DrawTile(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, st
 	RENDER_TILE(WRITE_4PIXELS, WRITE_4PIXELS_FLIPPED, 4)
 }
 
-void DrawClippedTile(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine, uint32 LineCount,
+void DrawClippedTile(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine, uint32 LineCount,
 		     struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -289,7 +289,7 @@ void DrawClippedTile(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS, WRITE_4PIXELS_FLIPPED, 4)
 }
 
-void DrawTilex2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTilex2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 
@@ -298,7 +298,7 @@ void DrawTilex2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, 
 	RENDER_TILE(WRITE_4PIXELSx2, WRITE_4PIXELS_FLIPPEDx2, 8)
 }
 
-void DrawClippedTilex2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine, uint32 LineCount,
+void DrawClippedTilex2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine, uint32 LineCount,
 		       struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -308,7 +308,7 @@ void DrawClippedTilex2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Wid
 	RENDER_CLIPPED_TILE(WRITE_4PIXELSx2, WRITE_4PIXELS_FLIPPEDx2, 8)
 }
 
-void DrawTilex2x2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTilex2x2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 
@@ -317,7 +317,7 @@ void DrawTilex2x2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount
 	RENDER_TILE(WRITE_4PIXELSx2x2, WRITE_4PIXELS_FLIPPEDx2x2, 8)
 }
 
-void DrawClippedTilex2x2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTilex2x2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			 uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -327,7 +327,7 @@ void DrawClippedTilex2x2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 W
 	RENDER_CLIPPED_TILE(WRITE_4PIXELSx2x2, WRITE_4PIXELS_FLIPPEDx2x2, 8)
 }
 
-void DrawLargePixel(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine, uint32 LineCount,
+void DrawLargePixel(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine, uint32 LineCount,
 		    struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -340,7 +340,7 @@ void DrawLargePixel(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels
 }
 #endif
 
-inline void WRITE_4PIXELS16(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 #if defined(__MIPSEL) && defined(__GNUC__) && !defined(NO_ASM)
 	uint16 *Screen = (uint16 *)GFX.S + Offset;
@@ -434,7 +434,7 @@ inline void WRITE_4PIXELS16(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #endif
 }
 
-inline void WRITE_4PIXELS16_FLIPPED(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 #if defined(__MIPSEL) && defined(__GNUC__) && !defined(NO_ASM)
 	uint16 *Screen = (uint16 *)GFX.S + Offset;
@@ -528,7 +528,7 @@ inline void WRITE_4PIXELS16_FLIPPED(uint32 Offset, uint8 *Pixels, struct SGFX *g
 #endif
 }
 
-inline void WRITE_4PIXELS16x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16x2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -550,7 +550,7 @@ inline void WRITE_4PIXELS16x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPEDx2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPEDx2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -572,7 +572,7 @@ inline void WRITE_4PIXELS16_FLIPPEDx2(uint32 Offset, uint8 *Pixels, struct SGFX 
 #undef FN
 }
 
-inline void WRITE_4PIXELS16x2x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16x2x2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -596,7 +596,7 @@ inline void WRITE_4PIXELS16x2x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPEDx2x2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPEDx2x2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -620,7 +620,7 @@ inline void WRITE_4PIXELS16_FLIPPEDx2x2(uint32 Offset, uint8 *Pixels, struct SGF
 #undef FN
 }
 
-void DrawTile16(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -628,7 +628,7 @@ void DrawTile16(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, 
 	RENDER_TILE(WRITE_4PIXELS16, WRITE_4PIXELS16_FLIPPED, 4)
 }
 
-void DrawClippedTile16(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine, uint32 LineCount,
+void DrawClippedTile16(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine, uint32 LineCount,
 		       struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -638,7 +638,7 @@ void DrawClippedTile16(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Wid
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16, WRITE_4PIXELS16_FLIPPED, 4)
 }
 
-void DrawTile16x2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16x2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -646,7 +646,7 @@ void DrawTile16x2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount
 	RENDER_TILE(WRITE_4PIXELS16x2, WRITE_4PIXELS16_FLIPPEDx2, 8)
 }
 
-void DrawClippedTile16x2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16x2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			 uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -656,7 +656,7 @@ void DrawClippedTile16x2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 W
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16x2, WRITE_4PIXELS16_FLIPPEDx2, 8)
 }
 
-void DrawTile16x2x2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16x2x2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -664,7 +664,7 @@ void DrawTile16x2x2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCou
 	RENDER_TILE(WRITE_4PIXELS16x2x2, WRITE_4PIXELS16_FLIPPEDx2x2, 8)
 }
 
-void DrawClippedTile16x2x2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16x2x2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			   uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -674,7 +674,7 @@ void DrawClippedTile16x2x2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16x2x2, WRITE_4PIXELS16_FLIPPEDx2x2, 8)
 }
 
-void DrawLargePixel16(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine, uint32 LineCount,
+void DrawLargePixel16(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine, uint32 LineCount,
 		      struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -686,7 +686,7 @@ void DrawLargePixel16(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixe
 	RENDER_TILE_LARGE(gfx->ScreenColors[pixel], PLOT_PIXEL)
 }
 
-inline void WRITE_4PIXELS16_ADD(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_ADD(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -716,7 +716,7 @@ inline void WRITE_4PIXELS16_ADD(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPED_ADD(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED_ADD(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -746,7 +746,7 @@ inline void WRITE_4PIXELS16_FLIPPED_ADD(uint32 Offset, uint8 *Pixels, struct SGF
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_ADD1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_ADD1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -776,7 +776,7 @@ inline void WRITE_4PIXELS16_ADD1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gf
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPED_ADD1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED_ADD1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -806,7 +806,7 @@ inline void WRITE_4PIXELS16_FLIPPED_ADD1_2(uint32 Offset, uint8 *Pixels, struct 
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_SUB(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_SUB(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -836,7 +836,7 @@ inline void WRITE_4PIXELS16_SUB(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPED_SUB(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED_SUB(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -866,7 +866,7 @@ inline void WRITE_4PIXELS16_FLIPPED_SUB(uint32 Offset, uint8 *Pixels, struct SGF
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_SUB1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_SUB1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -896,7 +896,7 @@ inline void WRITE_4PIXELS16_SUB1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gf
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPED_SUB1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED_SUB1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -926,7 +926,7 @@ inline void WRITE_4PIXELS16_FLIPPED_SUB1_2(uint32 Offset, uint8 *Pixels, struct 
 #undef FN
 }
 
-void DrawTile16Add(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16Add(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -934,7 +934,7 @@ void DrawTile16Add(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCoun
 	RENDER_TILE(WRITE_4PIXELS16_ADD, WRITE_4PIXELS16_FLIPPED_ADD, 4)
 }
 
-void DrawClippedTile16Add(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16Add(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			  uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -944,7 +944,7 @@ void DrawClippedTile16Add(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16_ADD, WRITE_4PIXELS16_FLIPPED_ADD, 4)
 }
 
-void DrawTile16Add1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16Add1_2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -952,7 +952,7 @@ void DrawTile16Add1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineC
 	RENDER_TILE(WRITE_4PIXELS16_ADD1_2, WRITE_4PIXELS16_FLIPPED_ADD1_2, 4)
 }
 
-void DrawClippedTile16Add1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16Add1_2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			     uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -962,7 +962,7 @@ void DrawClippedTile16Add1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16_ADD1_2, WRITE_4PIXELS16_FLIPPED_ADD1_2, 4)
 }
 
-void DrawTile16Sub(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16Sub(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -970,7 +970,7 @@ void DrawTile16Sub(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCoun
 	RENDER_TILE(WRITE_4PIXELS16_SUB, WRITE_4PIXELS16_FLIPPED_SUB, 4)
 }
 
-void DrawClippedTile16Sub(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16Sub(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			  uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -980,7 +980,7 @@ void DrawClippedTile16Sub(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16_SUB, WRITE_4PIXELS16_FLIPPED_SUB, 4)
 }
 
-void DrawTile16Sub1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16Sub1_2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -988,7 +988,7 @@ void DrawTile16Sub1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineC
 	RENDER_TILE(WRITE_4PIXELS16_SUB1_2, WRITE_4PIXELS16_FLIPPED_SUB1_2, 4)
 }
 
-void DrawClippedTile16Sub1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16Sub1_2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 			     uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -998,7 +998,7 @@ void DrawClippedTile16Sub1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16_SUB1_2, WRITE_4PIXELS16_FLIPPED_SUB1_2, 4)
 }
 
-inline void WRITE_4PIXELS16_ADDF1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_ADDF1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -1025,7 +1025,7 @@ inline void WRITE_4PIXELS16_ADDF1_2(uint32 Offset, uint8 *Pixels, struct SGFX *g
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPED_ADDF1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED_ADDF1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -1052,7 +1052,7 @@ inline void WRITE_4PIXELS16_FLIPPED_ADDF1_2(uint32 Offset, uint8 *Pixels, struct
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_SUBF1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_SUBF1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -1079,7 +1079,7 @@ inline void WRITE_4PIXELS16_SUBF1_2(uint32 Offset, uint8 *Pixels, struct SGFX *g
 #undef FN
 }
 
-inline void WRITE_4PIXELS16_FLIPPED_SUBF1_2(uint32 Offset, uint8 *Pixels, struct SGFX *gfx)
+inline void WRITE_4PIXELS16_FLIPPED_SUBF1_2(int32 Offset, uint8 *Pixels, struct SGFX *gfx)
 {
 	uint32 Pixel;
 	uint16 *Screen = (uint16 *)gfx->S + Offset;
@@ -1105,7 +1105,7 @@ inline void WRITE_4PIXELS16_FLIPPED_SUBF1_2(uint32 Offset, uint8 *Pixels, struct
 #undef FN
 }
 
-void DrawTile16FixedAdd1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16FixedAdd1_2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -1113,7 +1113,7 @@ void DrawTile16FixedAdd1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 
 	RENDER_TILE(WRITE_4PIXELS16_ADDF1_2, WRITE_4PIXELS16_FLIPPED_ADDF1_2, 4)
 }
 
-void DrawClippedTile16FixedAdd1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16FixedAdd1_2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 				  uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -1123,7 +1123,7 @@ void DrawClippedTile16FixedAdd1_2(uint32 Tile, uint32 Offset, uint32 StartPixel,
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16_ADDF1_2, WRITE_4PIXELS16_FLIPPED_ADDF1_2, 4)
 }
 
-void DrawTile16FixedSub1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
+void DrawTile16FixedSub1_2(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
 	register uint8 *bp;
@@ -1131,7 +1131,7 @@ void DrawTile16FixedSub1_2(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 
 	RENDER_TILE(WRITE_4PIXELS16_SUBF1_2, WRITE_4PIXELS16_FLIPPED_SUBF1_2, 4)
 }
 
-void DrawClippedTile16FixedSub1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+void DrawClippedTile16FixedSub1_2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 				  uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -1141,7 +1141,7 @@ void DrawClippedTile16FixedSub1_2(uint32 Tile, uint32 Offset, uint32 StartPixel,
 	RENDER_CLIPPED_TILE(WRITE_4PIXELS16_SUBF1_2, WRITE_4PIXELS16_FLIPPED_SUBF1_2, 4)
 }
 
-void DrawLargePixel16Add(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
+void DrawLargePixel16Add(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
 			 uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -1158,7 +1158,7 @@ void DrawLargePixel16Add(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 P
 	RENDER_TILE_LARGE(gfx->ScreenColors[pixel], LARGE_ADD_PIXEL)
 }
 
-void DrawLargePixel16Add1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
+void DrawLargePixel16Add1_2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
 			    uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -1175,7 +1175,7 @@ void DrawLargePixel16Add1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint3
 	RENDER_TILE_LARGE(gfx->ScreenColors[pixel], LARGE_ADD_PIXEL1_2)
 }
 
-void DrawLargePixel16Sub(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
+void DrawLargePixel16Sub(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
 			 uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE
@@ -1192,7 +1192,7 @@ void DrawLargePixel16Sub(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 P
 	RENDER_TILE_LARGE(gfx->ScreenColors[pixel], LARGE_SUB_PIXEL)
 }
 
-void DrawLargePixel16Sub1_2(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
+void DrawLargePixel16Sub1_2(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
 			    uint32 LineCount, struct SGFX *gfx)
 {
 	TILE_PREAMBLE

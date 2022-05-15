@@ -64,7 +64,7 @@ struct SGFX {
 	uint8 *S;
 	uint8 *DB;
 	uint16 *ScreenColors;
-	uint32 DepthDelta;
+	ptrdiff_t DepthDelta;
 	uint32 Z1;
 	uint32 Z2;
 	uint32 FixedColour;
@@ -202,10 +202,10 @@ inline uint16_t COLOR_SUB1_2(uint16_t C1, uint16_t C2)
 	return GFX.ZERO[(((C1) | RGB_HI_BITS_MASKx2) - ((C2)&RGB_REMOVE_LOW_BITS_MASK)) >> 1];
 }
 
-typedef void (*NormalTileRenderer)(uint32 Tile, uint32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx);
-typedef void (*ClippedTileRenderer)(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
+typedef void (*NormalTileRenderer)(uint32 Tile, int32 Offset, uint32 StartLine, uint32 LineCount, struct SGFX *gfx);
+typedef void (*ClippedTileRenderer)(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Width, uint32 StartLine,
 				    uint32 LineCount, struct SGFX *gfx);
-typedef void (*LargePixelRenderer)(uint32 Tile, uint32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
+typedef void (*LargePixelRenderer)(uint32 Tile, int32 Offset, uint32 StartPixel, uint32 Pixels, uint32 StartLine,
 				   uint32 LineCount, struct SGFX *gfx);
 
 START_EXTERN_C
