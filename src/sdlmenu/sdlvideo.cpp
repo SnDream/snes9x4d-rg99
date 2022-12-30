@@ -94,7 +94,13 @@ void S9xInitDisplay(int /*argc*/, char ** /*argv*/)
 #endif
 		upscale_p = UPSCALE_P;
 
-	screen = SDL_SetVideoMode(surfacewidth, surfaceheight, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(surfacewidth, surfaceheight, 16, SDL_HWSURFACE | 
+#if RG99
+		SDL_TRIPLEBUF
+#else
+		SDL_DOUBLEBUF
+#endif
+	);
 
 	if (screen == NULL) {
 		printf("Couldn't set video mode: %s\n", SDL_GetError());

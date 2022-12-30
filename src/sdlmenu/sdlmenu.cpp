@@ -60,6 +60,8 @@ void menu_dispupdate(void)
 	    "  Snes9x4D " BUILD_VERSION " for Miyoo  ",
 #elif GCW0
 	    "  Snes9x4D " BUILD_VERSION " for GCW0  ",
+#elif RG99
+	    "  Snes9x4D " BUILD_VERSION " for RG99  ",
 #else
 	    "  Snes9x4D " BUILD_VERSION " for SDL  ",
 #endif

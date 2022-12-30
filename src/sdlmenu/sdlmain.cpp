@@ -70,6 +70,8 @@
 #include "miyoo.h"
 #elif GCW0
 #include "gcw0.h"
+#elif RG99
+#include "rg99.h"
 #else
 #include "dingoo.h"
 #endif
@@ -222,7 +224,11 @@ void S9xResetConfig()
 	ZeroMemory(&Settings, sizeof(Settings));
 
 	Settings.JoystickEnabled = FALSE;
+#if RG99
+	Settings.SoundPlaybackRate = 3;
+#else
 	Settings.SoundPlaybackRate = 5;
+#endif
 	Settings.Stereo = TRUE;
 	Settings.SoundSync = TRUE;
 	Settings.SoundBufferSize = 256;
@@ -406,6 +412,8 @@ extern "C"
 	sprintf(msg, "Press R to Show MENU");
 #elif GCW0
 	sprintf(msg, "Press POWER to Show MENU");
+#elif RG99
+	sprintf(msg, "Press L2 to Show MENU");
 #else
 	sprintf(msg, "Press SELECT+START to Show MENU");
 #endif

@@ -9,7 +9,7 @@ SPC7110 = 0
 
 include Makefile.common
 
-PREFIX  = mipsel-linux
+PREFIX  = /opt/rs90-toolchain/bin/mipsel-linux
 
 CXX	= $(PREFIX)-g++
 CC	= $(PREFIX)-gcc
@@ -22,11 +22,16 @@ SDL_LIBS := $(shell $(SYSROOT)/usr/bin/sdl-config --libs)
 
 LDFLAGS = -lz -lm $(SDL_LIBS) -Wl,--as-needed -Wl,--gc-sections -s
 
-OFLAGS = -Ofast -fomit-frame-pointer -mips32r2 \
+OFLAGS = -O3 -fomit-frame-pointer -mips32 \
 	 -fdata-sections -ffunction-sections \
 	 -fno-stack-protector -fomit-frame-pointer \
 	 -fno-strict-aliasing \
-	 -Wall
+	 -Wall -mlong32 \
+	 -ffast-math -fno-strength-reduce \
+	 -finline-functions -funroll-loops \
+	 -fsection-anchors -mno-fp-exceptions \
+	 -mno-check-zero-division -mframe-header-opt \
+	 -fsingle-precision-constant -fno-common
 
 ifeq ($(PGO), GENERATE)
   OFLAGS += -fprofile-generate -fprofile-dir=/media/data/local/home/profile/snes9x4d
@@ -37,7 +42,7 @@ else ifeq ($(PGO), FORCE-APPLY)
   OFLAGS += -fprofile-use -fprofile-dir=./profile -fbranch-probabilities -Wno-error=coverage-mismatch
 else
   OFLAGS += -falign-functions=1 -falign-jumps=1 -falign-loops=1 \
-	    -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	    -fno-unwind-tables -fno-asynchronous-unwind-tables \
 	    -fmerge-all-constants
 endif
 
@@ -47,7 +52,7 @@ CCFLAGS += $(OFLAGS) \
 	-DFOREVER_16_BIT \
 	-DFOREVER_16_BIT_SOUND \
 	-DLAGFIX \
-	-DGCW0 \
+	-DRG99 \
 	-DVIDEO_MODE=1 \
 	-DZLIB \
 
@@ -62,7 +67,7 @@ CFLAGS = --std=gnu11 $(CCFLAGS)
 all: snes9x4d
 
 opk: snes9x4d
-	opk/make_opk.sh gcw0
+	opk/make_opk.sh rg99
 
 format:
 	find . -regex '.*\.\(c\|h\|cpp\|hpp\|cc\|cxx\)' -exec clang-format -style=file -i {} \;
