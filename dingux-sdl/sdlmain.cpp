@@ -445,6 +445,8 @@ int main (int argc, char **argv)
 	sprintf(msg,"Press HOME to Show MENU");
 #elif CYGWIN32
 	sprintf(msg,"Press ESC+LALT to Show MENU");
+#elif _RG99
+	sprintf(msg,"Press L2 to Show MENU");
 #else
 	sprintf(msg,"Press SELECT+START to Show MENU");
 #endif
@@ -1119,17 +1121,36 @@ void S9xProcessEvents (bool8_32 block)
 				keyssnes = SDL_GetKeyState(NULL);
 
 				//QUIT Emulator
-				if ( (keyssnes[sfc_key[SELECT_1]] == SDL_PRESSED) &&(keyssnes[sfc_key[START_1]] == SDL_PRESSED) && (keyssnes[sfc_key[X_1]] == SDL_PRESSED) )
+				if (
+#ifndef _RG99
+					(keyssnes[sfc_key[SELECT_1]] == SDL_PRESSED) && (keyssnes[sfc_key[START_1]] == SDL_PRESSED)
+#else
+					keyssnes[SDLK_PAGEDOWN] == SDL_PRESSED
+#endif
+					&& (keyssnes[sfc_key[X_1]] == SDL_PRESSED) )
+
 				{
 					S9xExit();
 				}
 				//RESET ROM Playback
-				else if ((keyssnes[sfc_key[SELECT_1]] == SDL_PRESSED) && (keyssnes[sfc_key[START_1]] == SDL_PRESSED) && (keyssnes[sfc_key[B_1]] == SDL_PRESSED))
+				else if (
+#ifndef _RG99
+					(keyssnes[sfc_key[SELECT_1]] == SDL_PRESSED) && (keyssnes[sfc_key[START_1]] == SDL_PRESSED)
+#else
+					keyssnes[SDLK_PAGEDOWN] == SDL_PRESSED
+#endif
+					&& (keyssnes[sfc_key[B_1]] == SDL_PRESSED))
 				{
 					S9xReset();
 				}
 				//SAVE State
-				else if ( (keyssnes[sfc_key[START_1]] == SDL_PRESSED) && (keyssnes[sfc_key[R_1]] == SDL_PRESSED) )
+				else if (
+#ifndef _RG99
+					(keyssnes[sfc_key[START_1]] == SDL_PRESSED)
+#else
+					keyssnes[SDLK_PAGEDOWN] == SDL_PRESSED
+#endif
+					&& (keyssnes[sfc_key[R_1]] == SDL_PRESSED) )
 				{
 					//extern char snapscreen;
 					char fname[256], ext[20];
@@ -1144,7 +1165,13 @@ void S9xProcessEvents (bool8_32 block)
 					S9xSetSoundMute(false);
 				}
 				//LOAD State
-				else if ( (keyssnes[sfc_key[START_1]] == SDL_PRESSED) && (keyssnes[sfc_key[L_1]] == SDL_PRESSED) )
+				else if (
+#ifndef _RG99
+					(keyssnes[sfc_key[START_1]] == SDL_PRESSED)
+#else
+					keyssnes[SDLK_PAGEDOWN] == SDL_PRESSED
+#endif
+					&& (keyssnes[sfc_key[L_1]] == SDL_PRESSED) )
 				{
 					char fname[256], ext[8];
 					S9xSetSoundMute(true);
@@ -1154,7 +1181,13 @@ void S9xProcessEvents (bool8_32 block)
 					S9xSetSoundMute(false);
 				}
 				// MAINMENU
-				else if ((keyssnes[sfc_key[SELECT_1]] == SDL_PRESSED)&&(keyssnes[sfc_key[START_1]] == SDL_PRESSED) )
+				else if (
+#ifndef _RG99
+					(keyssnes[sfc_key[SELECT_1]] == SDL_PRESSED) && (keyssnes[sfc_key[START_1]] == SDL_PRESSED)
+#else
+					keyssnes[SDLK_PAGEUP] == SDL_PRESSED
+#endif
+				)
 				{
 					S9xSetSoundMute(true);
 					menu_loop();
